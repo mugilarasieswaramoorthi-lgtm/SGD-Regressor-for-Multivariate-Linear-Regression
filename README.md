@@ -27,56 +27,38 @@ Developed by: Mugilarasi E
 RegisterNumber:25017644
 
 
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import SGDRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, r2_score
-
-data = {
-    'Hours_Studied': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    'Assignments_Completed': [1, 1, 2, 2, 3, 3, 4, 4, 5, 5],
-    'Sleep_Hours': [8, 7, 6, 7, 6, 5, 5, 6, 4, 4],
-    'Scores': [50, 55, 60, 65, 70, 72, 78, 82, 85, 88]
-}
-
-df = pd.DataFrame(data)
-print(df)
-
-X = df[['Hours_Studied', 'Assignments_Completed', 'Sleep_Hours']].values
-Y = df['Scores'].values
-
-X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=0
-)
-
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-sgd = SGDRegressor(
-    max_iter=1000,  
-    learning_rate='invscaling',
-    eta0=0.01, 
-    penalty='l2', 
-    random_state=0
-)
-
-sgd.fit(X_train_scaled, Y_train)
-
-Y_pred = sgd.predict(X_test_scaled)
-
-print("\n Coefficients:", sgd.coef_)
-print(" Intercept:", sgd.intercept_)
-print(" Mean Squared Error:", mean_squared_error(Y_test, Y_pred))
-print(" R2 Score:", r2_score(Y_test, Y_pred))  
+ import numpy as np 
+from sklearn.datasets import fetch_california_housing 
+from sklearn.linear_model import SGDRegressor 
+from sklearn.multioutput import MultiOutputRegressor 
+from sklearn.model_selection import train_test_split 
+from sklearn.metrics import mean_squared_error 
+from sklearn.preprocessing import StandardScaler 
+data=fetch_california_housing() 
+X=data.data[:,:3] 
+Y=np.column_stack((data.target,data.data[:,6])) 
+X_train,X_test,Y_train,Y_test=train_test_split(X,Y,test_size=0.2,random_sta
+ scaler_X=StandardScaler() 
+scaler_Y=StandardScaler() 
+X_train =scaler_X.fit_transform(X_train) 
+X_test=scaler_X.transform(X_test) 
+Y_train=scaler_Y.fit_transform(Y_train) 
+Y_test=scaler_Y.transform(Y_test) 
+sgd=SGDRegressor(max_iter=1000, tol=1e-3) 
+multi_output_sgd=MultiOutputRegressor(sgd) 
+multi_output_sgd.fit(X_train,Y_train) 
+Y_pred=multi_output_sgd.predict(X_test) 
+Y_pred=scaler_Y.inverse_transform(Y_pred) 
+print(Y_pred)
+ Y_test=scaler_Y.inverse_transform(Y_test) 
+mse=mean_squared_error(Y_test,Y_pred) 
+print("\nMean Square Error:",mse) 
+print("\nFirst 5 predictions:\n",Y_pred[:5])
 
 ```
 
 ## Output:
-<img width="693" height="376" alt="Screenshot 2025-10-06 201827" src="https://github.com/user-attachments/assets/633aaa5d-b741-43a1-90d8-f1ea2c44064f" />
-
+![4th 1](https://github.com/user-attachments/assets/9c5cceb9-5c30-4bab-b722-1855a5769bd7)
 
 
 ## Result:
